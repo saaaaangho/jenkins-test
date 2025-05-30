@@ -34,10 +34,10 @@ pipeline {
                 sshagent(credentials: ['shlee']) {
                     sh '''
                     ssh -o StrictHostKeyChecking=no $DEPLOY_USER@$DEPLOY_HOST '
-                        docker pull $DOCKER_USER/flask-api:$IMAGE_TAG &&
+                        docker pull saaaangho/flask-api:v3 &&
                         docker stop flask-api || true &&
                         docker rm flask-api || true &&
-                        docker run -d --name flask-api -p 80:80 $DOCKER_USER/flask-api:$IMAGE_TAG
+                        docker run -d --name flask-api -p 80:80 saaaangho/flask-api:v3
                     '
                     '''
                 }
