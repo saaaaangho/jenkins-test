@@ -12,7 +12,7 @@ pipeline {
         stage('Docker Build') {
             steps {
                 sh '''
-                sudo docker build -t $IMAGE_NAME:$IMAGE_TAG .
+                docker build -t $IMAGE_NAME:$IMAGE_TAG .
                 '''
             }
         }
@@ -21,9 +21,9 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     sh '''
-                    echo "$DOCKER_PASS" | sudo docker login -u "$DOCKER_USER" --password-stdin
-                    sudo docker tag $IMAGE_NAME:$IMAGE_TAG $DOCKER_USER/flask-api:$IMAGE_TAG
-                    sudo docker push $DOCKER_USER/flask-api:$IMAGE_TAG
+                    echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                    docker tag $IMAGE_NAME:$IMAGE_TAG $DOCKER_USER/flask-api:$IMAGE_TAG
+                    docker push $DOCKER_USER/flask-api:$IMAGE_TAG
                     '''
                 }
             }
@@ -31,13 +31,13 @@ pipeline {
 
         stage('Deploy to Server') {
             steps {
-                sshagent(['shlee-test-server']) {
+                sshagent(credentials: ['shlee']) {
                     sh '''
                     ssh -o StrictHostKeyChecking=no $DEPLOY_USER@$DEPLOY_HOST '
-                        sudo docker pull $DOCKER_USER/flask-api:$IMAGE_TAG &&
-                        sudo docker stop flask-api || true &&
-                        sudo docker rm flask-api || true &&
-                        sudo docker run -d --name flask-api -p 80:80 $DOCKER_USER/flask-api:$IMAGE_TAG
+                        docker pull $DOCKER_USER/flask-api:$IMAGE_TAG &&
+                        docker stop flask-api || true &&
+                        docker rm flask-api || true &&
+                        docker run -d --name flask-api -p 80:80 $DOCKER_USER/flask-api:$IMAGE_TAG
                     '
                     '''
                 }
